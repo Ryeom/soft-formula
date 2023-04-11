@@ -97,4 +97,10 @@ func add[T calculator.Number](a, b T) T {
 func TestTransfer(t *testing.T) {
 	s := "(mother_age + father_age + sister_age) / baby * 2.0 "
 
+	// var list []string
+	for i, char := range s {
+		if 65 <= char && char <= 122 && 65 <= s[i-1] && s[i-1] <= 122 {
+			fmt.Println(i, char)
+		}
+	}
 }
