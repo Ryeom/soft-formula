@@ -1,10 +1,8 @@
 package test
 
 import (
-	"errors"
 	"fmt"
-	"golang.org/x/exp/constraints"
-	"reflect"
+	"test/calculator"
 	"testing"
 )
 
@@ -29,16 +27,6 @@ import (
 	5. 덧셈/뺄셈 연산자: +, -
 */
 
-type Number interface {
-	constraints.Integer | constraints.Float
-}
-type Calculation struct {
-	InfixFormula   string // 연산자 중위 표기법
-	PostfixFormula string // 연산자 후위 표기법
-	Parameters     []interface{}
-	result         float64
-}
-
 func RunOp(sign string, a, b float64) float64 {
 	s := byte(sign[0])
 	switch s {
@@ -56,115 +44,43 @@ func RunOp(sign string, a, b float64) float64 {
 }
 
 func TestFormula(t *testing.T) {
-	a := &Calculation{InfixFormula: "(a+b)*c+d", Parameters: []interface{}{1, 2.3, 2, 2}}
+	//a := &Calculation{InfixFormula: "(a+b)*c+d", Parameters: []interface{}{1, 2.3, 2, 2}}
+	//
+	//fmt.Println(a.Init())
+	//b := &Calculation{PostfixFormula: "12+3/*4+", Parameters: []interface{}{4, 5.1, 7, 4}}
+	//
+	//fmt.Println(b.Init())
+	//a, aerr := calculator.NewCalculation("postfix", "(a+b)*Z+d", []interface{}{1, 2.3, 2, 2})
+	b, berr := calculator.NewCalculation("infix", "ab+z*d+", []interface{}{4, 5.1, 7, 4})
 
-	fmt.Println(a.Init())
-	b := &Calculation{PostfixFormula: "12+3/*4+", Parameters: []interface{}{4, 5.1, 7, 4}}
+	//fmt.Println("a : ", a, aerr)
+	fmt.Println("b : ", b, berr)
 
-	fmt.Println(b.Init())
-}
-func (c *Calculation) Init() *Calculation {
-	if c.PostfixFormula == "" {
-		p, err := infixToPostfix(c.PostfixFormula)
-		if err != nil {
+	//a.Purpose = []string{"a", "b"}
+	b.Purpose = []string{"c", "d"}
 
-		}
-		c.InfixFormula = p
-	} else if c.InfixFormula == "" {
-		i, err := postfixToInfix(c.InfixFormula)
-		if err != nil {
+	fmt.Println("------------------")
+	//fmt.Println("a : ", a, aerr)
+	fmt.Println("b : ", b, berr)
 
-		}
-		c.PostfixFormula = i
-	}
-	return c
 }
 
-func postfixToInfix(postfix string) (string, error) {
-	var stack []string
-
-	for _, char := range postfix {
-		if 65 <= char && char <= 122 {
-			stack = append(stack, string(char))
-		} else {
-			if len(stack) < 2 {
-				return "", fmt.Errorf("invalid postfix expression: %s", postfix)
-			}
-			right := stack[len(stack)-1]
-			left := stack[len(stack)-2]
-			stack = stack[:len(stack)-2]
-			stack = append(stack, fmt.Sprintf("(%s %c %s)", left, char, right))
-		}
-	}
-
-	if len(stack) != 1 {
-		return "", fmt.Errorf("invalid postfix expression: %s", postfix)
-	}
-
-	return stack[0], nil
-}
-
-func infixToPostfix(input string) (string, error) {
-	fmt.Println([]rune("azAZ"))
-	// 연산자 우선순위 정의
-	precedence := map[rune]int{'*': 3, '/': 3, '+': 2, '-': 2}
-
-	var output string // 결과를 담을 변수
-	var stack []rune  // 스택
-	fmt.Println()
-	for _, char := range input {
-		fmt.Println(reflect.TypeOf(char))
-		switch {
-		//case unicode.IsDigit(char):
-		case 65 <= char && char <= 122:
-			output += string(char) // 숫자이면 결과에 추가
-		case char == '(':
-			stack = append(stack, char) // 여는 괄호는 스택에 추가
-		case char == ')':
-			// 닫는 괄호를 만날 때까지 스택에서 연산자를 pop하고 결과에 추가
-			for len(stack) > 0 && stack[len(stack)-1] != '(' {
-				output += string(stack[len(stack)-1])
-				stack = stack[:len(stack)-1]
-			}
-			if len(stack) == 0 {
-				return "", errors.New("mismatched parentheses")
-			}
-			stack = stack[:len(stack)-1] // 여는 괄호 pop
-		case isOperator(char):
-			// 스택에서 우선순위가 높은 연산자를 pop하고 결과에 추가
-			for len(stack) > 0 && stack[len(stack)-1] != '(' &&
-				precedence[char] <= precedence[stack[len(stack)-1]] {
-				output += string(stack[len(stack)-1])
-				stack = stack[:len(stack)-1]
-			}
-			stack = append(stack, char) // 현재 연산자를 스택에 추가
-		default:
-			return "", fmt.Errorf("unknown character '%v'", string(char))
-		}
-	}
-
-	// 스택에 남아있는 연산자를 모두 pop하여 결과에 추가
-	for len(stack) > 0 {
-		if stack[len(stack)-1] == '(' {
-			return "", errors.New("mismatched parentheses")
-		}
-		output += string(stack[len(stack)-1])
-		stack = stack[:len(stack)-1]
-	}
-	return output, nil
-}
-
-// 주어진 문자가 연산자인지 확인하는 함수
-func isOperator(char rune) bool {
-	return char == '+' || char == '-' || char == '*' || char == '/'
-}
-
-func (c Calculation) calc() float64 {
-	r := 0.0
-
-	c.result = r
-	return r
-}
+//func (c *Calculation) Init() *Calculation {
+//	if c.PostfixFormula == "" {
+//		p, err := infixToPostfix(c.PostfixFormula)
+//		if err != nil {
+//			fmt.Println(p, err)
+//		}
+//		c.InfixFormula = p
+//	} else if c.InfixFormula == "" {
+//		i, err := postfixToInfix(c.InfixFormula)
+//		if err != nil {
+//			fmt.Println(i, err)
+//		}
+//		c.PostfixFormula = i
+//	}
+//	return c
+//}
 
 func avg(list []float64) float64 {
 	var total float64
@@ -174,6 +90,11 @@ func avg(list []float64) float64 {
 	return total / float64(len(list))
 }
 
-func add[T Number](a, b T) T {
+func add[T calculator.Number](a, b T) T {
 	return a + b
+}
+
+func TestTransfer(t *testing.T) {
+	s := "(mother_age + father_age + sister_age) / baby * 2.0 "
+
 }
