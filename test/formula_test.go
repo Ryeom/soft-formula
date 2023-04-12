@@ -98,7 +98,7 @@ func add[T calculator.Number](a, b T) T {
 
 func TestTransfer(t *testing.T) {
 	//s := "(mother_age+father_age+sister_age)/baby*2.0"
-	s := "(a+b+m)/x*2.0"
+	s := "(a2+5b+m_7)/x*2.0"
 
 	var list []string
 	var word string
@@ -129,10 +129,16 @@ func TestTransfer(t *testing.T) {
 
 	i := infixToPostfix(list)
 	fmt.Println("결과 i : ", i)
-	infix := []string{"(", "2", "+", "5", ")", "*", "6", "/", "(", "2", "+", "8", ")"}
+	infix := []string{"(", "a2", "+", "5b", ")", "*", "64", "/", "(", "2", "+", "8", ")"}
 	//postfix := []string{"A", "B", "+", "C", "*", "D", "E", "+", "/"}
 	i = infixToPostfix(infix)
 	fmt.Println("결과 i : ", i)
+	fmt.Println("-0-------")
+
+	postfix := []string{"a2", "5b", "+", "64", "*", "2", "8", "+", "\\/"}
+	p := postfixToInfix(postfix)
+	fmt.Println("결과 p : ", p)
+
 }
 
 //후위를 중위로~
@@ -162,7 +168,7 @@ func isOperator(token string) bool {
 	return false
 }
 func TestRegexp(t *testing.T) {
-	matched, _ := regexp.MatchString("[a-zA-Z0-9]+_", "asdf12_1d")
+	matched, _ := regexp.MatchString("[a-zA-Z0-9_]+", "a2")
 	fmt.Println(matched)
 
 }
@@ -178,7 +184,9 @@ func infixToPostfix(tokens []string) []string {
 	}
 
 	for _, token := range tokens {
-		if isNumber(token) { // 혹은 변수인지 ?
+		matched, _ := regexp.MatchString("[a-zA-Z0-9_]+", token)
+		fmt.Println(matched)
+		if isNumber(token) || matched { // 혹은 변수인지 ?
 			postfix = append(postfix, token)
 		} else if token == "(" {
 			stack = append(stack, token)
