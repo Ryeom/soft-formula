@@ -2,6 +2,8 @@ package test
 
 import (
 	"fmt"
+	"regexp"
+	"strconv"
 	"test/calculator"
 	"testing"
 )
@@ -95,7 +97,8 @@ func add[T calculator.Number](a, b T) T {
 }
 
 func TestTransfer(t *testing.T) {
-	s := "(mother_age+father_age+sister_age)/baby*2.0"
+	//s := "(mother_age+father_age+sister_age)/baby*2.0"
+	s := "(a+b+m)/x*2.0"
 
 	var list []string
 	var word string
@@ -123,4 +126,96 @@ func TestTransfer(t *testing.T) {
 	for i, s2 := range list {
 		fmt.Println(i, s2)
 	}
+
+	i := infixToPostfix(list)
+	fmt.Println("결과 i : ", i)
+	infix := []string{"(", "2", "+", "5", ")", "*", "6", "/", "(", "2", "+", "8", ")"}
+	//postfix := []string{"A", "B", "+", "C", "*", "D", "E", "+", "/"}
+	i = infixToPostfix(infix)
+	fmt.Println("결과 i : ", i)
+}
+
+//후위를 중위로~
+func postfixToInfix(postfix []string) []string {
+	stack := make([]string, 0)
+	for _, token := range postfix {
+		if isOperator(token) {
+			// 연산자인 경우
+			operand2 := stack[len(stack)-1]
+			stack = stack[:len(stack)-1]
+			operand1 := stack[len(stack)-1]
+			stack = stack[:len(stack)-1]
+			infix := "(" + operand1 + " " + token + " " + operand2 + ")"
+			stack = append(stack, infix)
+		} else {
+			// 피연산자인 경우
+			stack = append(stack, token)
+		}
+	}
+	return stack
+}
+
+func isOperator(token string) bool {
+	if token == "+" || token == "-" || token == "*" || token == "/" || token == "^" {
+		return true
+	}
+	return false
+}
+func TestRegexp(t *testing.T) {
+	matched, _ := regexp.MatchString("[a-zA-Z0-9]+_", "asdf12_1d")
+	fmt.Println(matched)
+
+}
+
+//중위를 후위로~
+func infixToPostfix(tokens []string) []string {
+	var stack []string
+	var postfix []string
+	operators := map[string]int{
+		"+": 1, "-": 1,
+		"*": 2, "/": 2, "%": 2,
+		"^": 3,
+	}
+
+	for _, token := range tokens {
+		if isNumber(token) { // 혹은 변수인지 ?
+			postfix = append(postfix, token)
+		} else if token == "(" {
+			stack = append(stack, token)
+		} else if token == ")" {
+			for len(stack) > 0 && stack[len(stack)-1] != "(" {
+				postfix = append(postfix, stack[len(stack)-1])
+				stack = stack[:len(stack)-1]
+			}
+			if len(stack) == 0 {
+				return nil // 괄호가 맞지 않는 경우 nil 반환
+			}
+			// 왼쪽 괄호 제거
+			stack = stack[:len(stack)-1]
+		} else if _, ok := operators[token]; ok {
+			for len(stack) > 0 && stack[len(stack)-1] != "(" &&
+				operators[stack[len(stack)-1]] >= operators[token] {
+				postfix = append(postfix, stack[len(stack)-1])
+				stack = stack[:len(stack)-1]
+			}
+			stack = append(stack, token)
+		} else {
+			return nil // 올바른 토큰이 아닌 경우 nil 반환
+		}
+	}
+
+	for len(stack) > 0 {
+		if stack[len(stack)-1] == "(" {
+			return nil // 괄호가 맞지 않는 경우 nil 반환
+		}
+		postfix = append(postfix, stack[len(stack)-1])
+		stack = stack[:len(stack)-1]
+	}
+
+	return postfix
+}
+
+func isNumber(token string) bool {
+	_, err := strconv.ParseFloat(token, 64)
+	return err == nil
 }
