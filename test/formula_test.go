@@ -99,34 +99,9 @@ func add[T calculator.Number](a, b T) T {
 func TestTransfer(t *testing.T) {
 	//s := "(mother_age+father_age+sister_age)/baby*2.0"
 	s := "(a2+5b+m_7)/x*2.0"
+	//ss := "a2 5b + 64 * 2 8 + /"
 
-	var list []string
-	var word string
-	for i, char := range s {
-		if !calculator.IsOperator(char) && !calculator.IsBracket(char) {
-			//fmt.Printf("%s\n", string(char))
-			//if !calculator.IsOperator(rune(s[i-1])) && !calculator.IsBracket(rune(s[i-1])) {
-			//	fmt.Println(len(s), i, !calculator.IsOperator(rune(s[i-1])), !calculator.IsBracket(rune(s[i-1])), string(char))
-			//}
-			word = word + string(char)
-			if len(s) <= i+1 {
-				list = append(list, word)
-				break
-			}
-			if len(s) > i && (calculator.IsOperator(rune(s[i+1])) || calculator.IsBracket(rune(s[i+1]))) {
-				list = append(list, word)
-				word = ""
-			}
-		} else {
-			list = append(list, string(char))
-		}
-		//fmt.Println("워드", word)
-	}
-	fmt.Println("리스트", list)
-	for i, s2 := range list {
-		fmt.Println(i, s2)
-	}
-
+	list := calculator.PlanTextToInfixFormula(s)
 	i := infixToPostfix(list)
 	fmt.Println("결과 i : ", i)
 	infix := []string{"(", "a2", "+", "5b", ")", "*", "64", "/", "(", "2", "+", "8", ")"}
@@ -135,9 +110,38 @@ func TestTransfer(t *testing.T) {
 	fmt.Println("결과 i : ", i)
 	fmt.Println("-0-------")
 
-	postfix := []string{"a2", "5b", "+", "64", "*", "2", "8", "+", "\\/"}
+	postfix := []string{"a2", "5b", "+", "64", "*", "2", "8", "+", `/`}
 	p := postfixToInfix(postfix)
 	fmt.Println("결과 p : ", p)
+
+	var nr []interface{}
+	for _, w := range p {
+		if len(w) == 0 {
+			w1 := rune(w[0])
+			if calculator.IsOperator(w1) || calculator.IsBracket(w1) {
+				nr = append(nr, w)
+				continue
+			}
+			v, errpf := strconv.ParseFloat(w, 64)
+			if errpf != nil {
+				nr = append(nr, w)
+				continue
+			}
+			nr = append(nr, v)
+		} else {
+			v, errpf := strconv.ParseFloat(w, 64)
+			if errpf != nil {
+				nr = append(nr, w)
+				continue
+			}
+			nr = append(nr, v)
+		}
+	}
+	v, erre := calculator.EvaluatePostfix(nr)
+	if erre != nil {
+		fmt.Println(erre)
+	}
+	fmt.Println("result !!!!!", v)
 
 }
 

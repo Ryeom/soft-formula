@@ -122,3 +122,79 @@ func IsOperator(c rune) bool {
 func IsBracket(c rune) bool {
 	return c == ')' || c == '('
 }
+
+func PlanTextToInfixFormula(s string) []string {
+	var list []string
+	var word string
+	for i, char := range s {
+		if !IsOperator(char) && !IsBracket(char) {
+			word = word + string(char)
+			if len(s) <= i+1 {
+				list = append(list, word)
+				break
+			}
+			if len(s) > i && (IsOperator(rune(s[i+1])) || IsBracket(rune(s[i+1]))) {
+				list = append(list, word)
+				word = ""
+			}
+		} else {
+			list = append(list, string(char))
+		}
+	}
+	return list
+}
+func EvaluatePostfix(expr []interface{}) (float64, error) {
+	stack := make([]float64, 0)
+	for _, token := range expr {
+		switch t := token.(type) {
+		case float64:
+			stack = append(stack, t)
+		case string:
+			switch t {
+			case "+":
+				if len(stack) < 2 {
+					return 0, errors.New("invalid expression")
+				}
+				op1 := stack[len(stack)-2]
+				op2 := stack[len(stack)-1]
+				stack = stack[:len(stack)-2]
+				stack = append(stack, op1+op2)
+			case "-":
+				if len(stack) < 2 {
+					return 0, errors.New("invalid expression")
+				}
+				op1 := stack[len(stack)-2]
+				op2 := stack[len(stack)-1]
+				stack = stack[:len(stack)-2]
+				stack = append(stack, op1-op2)
+			case "*":
+				if len(stack) < 2 {
+					return 0, errors.New("invalid expression")
+				}
+				op1 := stack[len(stack)-2]
+				op2 := stack[len(stack)-1]
+				stack = stack[:len(stack)-2]
+				stack = append(stack, op1*op2)
+			case "/":
+				if len(stack) < 2 {
+					return 0, errors.New("invalid expression")
+				}
+				op1 := stack[len(stack)-2]
+				op2 := stack[len(stack)-1]
+				if op2 == 0 {
+					return 0, errors.New("cannot be divided by zero")
+				}
+				stack = stack[:len(stack)-2]
+				stack = append(stack, op1/op2)
+			default:
+				return 0, errors.New("unknown operator")
+			}
+		default:
+			return 0, errors.New("unknown token")
+		}
+	}
+	if len(stack) != 1 {
+		return 0, errors.New("invalid expression")
+	}
+	return stack[0], nil
+}
