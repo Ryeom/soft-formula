@@ -104,43 +104,41 @@ func TestTransfer(t *testing.T) {
 	list := calculator.PlanTextToInfixFormula(s)
 	i := infixToPostfix(list)
 	fmt.Println("결과 i : ", i)
-	infix := []string{"(", "a2", "+", "5b", ")", "*", "64", "/", "(", "2", "+", "8", ")"}
+	infix := []string{"(", "62", "+", "144", ")", "*", "4", "/", "(", "120", "+", "80", ")"}
 	//postfix := []string{"A", "B", "+", "C", "*", "D", "E", "+", "/"}
 	i = infixToPostfix(infix)
 	fmt.Println("결과 i : ", i)
 	fmt.Println("-0-------")
 
-	postfix := []string{"a2", "5b", "+", "64", "*", "2", "8", "+", `/`}
+	postfix := []string{"21", "5", "+", "64", "*", "2", "8", "+", `/`}
 	p := postfixToInfix(postfix)
 	fmt.Println("결과 p : ", p)
+	//
+	//var nr []interface{}
+	//for _, w := range p {
+	//	if len(w) == 0 {
+	//		w1 := rune(w[0])
+	//		if calculator.IsOperator(w1) || calculator.IsBracket(w1) {
+	//			nr = append(nr, w)
+	//			continue
+	//		}
+	//		v, errpf := strconv.ParseFloat(w, 64)
+	//		if errpf != nil {
+	//			nr = append(nr, w)
+	//			continue
+	//		}
+	//		nr = append(nr, v)
+	//	} else {
+	//		v, errpf := strconv.ParseFloat(w, 64)
+	//		if errpf != nil {
+	//			nr = append(nr, w)
+	//			continue
+	//		}
+	//		nr = append(nr, v)
+	//	}
+	//}
+	v, _ := calculator.EvaluatePostfix(i)
 
-	var nr []interface{}
-	for _, w := range p {
-		if len(w) == 0 {
-			w1 := rune(w[0])
-			if calculator.IsOperator(w1) || calculator.IsBracket(w1) {
-				nr = append(nr, w)
-				continue
-			}
-			v, errpf := strconv.ParseFloat(w, 64)
-			if errpf != nil {
-				nr = append(nr, w)
-				continue
-			}
-			nr = append(nr, v)
-		} else {
-			v, errpf := strconv.ParseFloat(w, 64)
-			if errpf != nil {
-				nr = append(nr, w)
-				continue
-			}
-			nr = append(nr, v)
-		}
-	}
-	v, erre := calculator.EvaluatePostfix(nr)
-	if erre != nil {
-		fmt.Println(erre)
-	}
 	fmt.Println("result !!!!!", v)
 
 }

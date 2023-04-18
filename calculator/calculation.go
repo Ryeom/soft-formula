@@ -4,7 +4,9 @@ import (
 	"errors"
 	"fmt"
 	"golang.org/x/exp/constraints"
+	"math"
 	"reflect"
+	"strconv"
 )
 
 type Number interface {
@@ -88,7 +90,7 @@ func infixToPostfix(input string) (string, error) {
 				return "", errors.New("mismatched parentheses")
 			}
 			stack = stack[:len(stack)-1] // 여는 괄호 pop
-		case IsOperator(char):
+		case IsOperator(string(char)):
 			// 스택에서 우선순위가 높은 연산자를 pop하고 결과에 추가
 			for len(stack) > 0 && stack[len(stack)-1] != '(' &&
 				precedence[char] <= precedence[stack[len(stack)-1]] {
@@ -115,8 +117,8 @@ func infixToPostfix(input string) (string, error) {
 }
 
 // 주어진 문자가 연산자인지 확인하는 함수
-func IsOperator(c rune) bool {
-	return c == '+' || c == '-' || c == '*' || c == '/'
+func IsOperator(s string) bool {
+	return s == "+" || s == "-" || s == "*" || s == "/" || s == "%"
 }
 
 func IsBracket(c rune) bool {
@@ -127,13 +129,13 @@ func PlanTextToInfixFormula(s string) []string {
 	var list []string
 	var word string
 	for i, char := range s {
-		if !IsOperator(char) && !IsBracket(char) {
+		if !IsOperator(string(char)) && !IsBracket(char) {
 			word = word + string(char)
 			if len(s) <= i+1 {
 				list = append(list, word)
 				break
 			}
-			if len(s) > i && (IsOperator(rune(s[i+1])) || IsBracket(rune(s[i+1]))) {
+			if len(s) > i && (IsOperator(string(s[i+1])) || IsBracket(rune(s[i+1]))) {
 				list = append(list, word)
 				word = ""
 			}
@@ -143,58 +145,46 @@ func PlanTextToInfixFormula(s string) []string {
 	}
 	return list
 }
-func EvaluatePostfix(expr []interface{}) (float64, error) {
+
+func EvaluatePostfix(tokens []string) (float64, error) {
 	stack := make([]float64, 0)
-	for _, token := range expr {
-		switch t := token.(type) {
-		case float64:
-			stack = append(stack, t)
-		case string:
-			switch t {
-			case "+":
-				if len(stack) < 2 {
-					return 0, errors.New("invalid expression")
-				}
-				op1 := stack[len(stack)-2]
-				op2 := stack[len(stack)-1]
-				stack = stack[:len(stack)-2]
-				stack = append(stack, op1+op2)
-			case "-":
-				if len(stack) < 2 {
-					return 0, errors.New("invalid expression")
-				}
-				op1 := stack[len(stack)-2]
-				op2 := stack[len(stack)-1]
-				stack = stack[:len(stack)-2]
-				stack = append(stack, op1-op2)
-			case "*":
-				if len(stack) < 2 {
-					return 0, errors.New("invalid expression")
-				}
-				op1 := stack[len(stack)-2]
-				op2 := stack[len(stack)-1]
-				stack = stack[:len(stack)-2]
-				stack = append(stack, op1*op2)
-			case "/":
-				if len(stack) < 2 {
-					return 0, errors.New("invalid expression")
-				}
-				op1 := stack[len(stack)-2]
-				op2 := stack[len(stack)-1]
-				if op2 == 0 {
-					return 0, errors.New("cannot be divided by zero")
-				}
-				stack = stack[:len(stack)-2]
-				stack = append(stack, op1/op2)
-			default:
-				return 0, errors.New("unknown operator")
+
+	for _, token := range tokens {
+		if isNumber(token) {
+			num, _ := strconv.ParseFloat(token, 64)
+			stack = append(stack, num)
+		} else if IsOperator(token) {
+			if len(stack) < 2 {
+				return 0, errors.New("invalid expression")
 			}
-		default:
-			return 0, errors.New("unknown token")
+			op1 := stack[len(stack)-2]
+			op2 := stack[len(stack)-1]
+			stack = stack[:len(stack)-2]
+			var result float64
+			switch token {
+			case "+":
+				result = op1 + op2
+			case "-":
+				result = op1 - op2
+			case "*":
+				result = op1 * op2
+			case "/":
+				result = op1 / op2
+			case "%":
+				result = math.Mod(op1, op2)
+			}
+			stack = append(stack, result)
 		}
 	}
+
 	if len(stack) != 1 {
 		return 0, errors.New("invalid expression")
 	}
+
 	return stack[0], nil
+}
+
+func isNumber(token string) bool {
+	_, err := strconv.ParseFloat(token, 64)
+	return err == nil
 }
