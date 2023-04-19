@@ -12,29 +12,31 @@ import (
 type Number interface {
 	constraints.Integer | constraints.Float
 }
-type Calculation struct {
-	InfixFormula   string // 연산자 중위 표기법
-	PostfixFormula string // 연산자 후위 표기법
-	Parameters     []interface{}
-	Purpose        []string
-	Result         float64
+type Formula struct { // 공식 그자체
+	Id         string
+	Infix      string // 연산자 중위 표기법
+	Postfix    string // 연산자 후위 표기법
+	Parameters []interface{}
+	Meaning    []string
+	Result     float64
+	Display    []string // 보여지기위함
 }
 
-func NewCalculation(formulaType, formula string, parameters []interface{}) (*Calculation, error) {
+func NewCalculation(formulaType, formula string, parameters []interface{}) (*Formula, error) {
 	if formulaType == "postfix" {
 		p, err := infixToPostfix(formula)
 		if err != nil {
 			fmt.Println(p, err)
 			return nil, nil
 		}
-		return &Calculation{InfixFormula: formula, PostfixFormula: p, Parameters: parameters}, nil
+		return &Formula{Infix: formula, Postfix: p, Parameters: parameters}, nil
 	} else if formulaType == "infix" {
 		i, err := postfixToInfix(formula)
 		if err != nil {
 			fmt.Println(i, err)
 			return nil, nil
 		}
-		return &Calculation{InfixFormula: i, PostfixFormula: formula, Parameters: parameters}, nil
+		return &Formula{Infix: i, Postfix: formula, Parameters: parameters}, nil
 	}
 	return nil, nil
 }

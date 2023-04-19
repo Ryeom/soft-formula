@@ -59,7 +59,7 @@ func TestFormula(t *testing.T) {
 	fmt.Println("b : ", b, berr)
 
 	//a.Purpose = []string{"a", "b"}
-	b.Purpose = []string{"c", "d"}
+	//b.Purpose = []string{"c", "d"}
 
 	fmt.Println("------------------")
 	//fmt.Println("a : ", a, aerr)
