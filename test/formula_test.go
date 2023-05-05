@@ -2,9 +2,9 @@ package test
 
 import (
 	"fmt"
+	"github.com/Ryeom/soft-formula/calculator"
 	"regexp"
 	"strconv"
-	"test/calculator"
 	"testing"
 )
 

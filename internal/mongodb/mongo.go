@@ -8,8 +8,7 @@ import (
 	"time"
 )
 
-func New(platform, target string) *mongo.Client {
-	ip := ""
+func New(platform, target, ip string) *mongo.Client {
 	// 여기서 통신 테스트 하기
 	return newMongoClient(ip)
 }
@@ -29,4 +28,3 @@ func newMongoClient(key string) *mongo.Client {
 	}
 	return client
 }
-v
